@@ -1,0 +1,42 @@
+# CLAUDE.md (Global)
+
+This file applies to all Claude Code sessions, across all projects.
+
+## Agent workflow
+
+When the user says "并发执行任务" or similar, do NOT launch sub-agents directly. Instead:
+1. Confirm the concurrency plan (task breakdown, parallelism dependencies, which agent per task)
+2. Confirm constraints for each sub-agent
+3. Confirm acceptance criteria for each sub-agent
+4. Start execution only after user explicitly confirms
+If a sub-agent fails the same task 3 times, stop retrying and report to the user.
+
+When the user corrects a mistake, proactively ask whether to update the relevant configuration to prevent recurrence.
+
+When the user runs `/compact`, proactively ask whether to extract constraints from the current conversation context and update project-level or global configuration.
+
+## Tool Preferences
+
+- Prefer Read, Edit, Write, Glob, Grep over Bash for file operations
+- Use `/browse` from gstack for all web browsing. Never use `mcp__claude-in-chrome__*` tools.
+
+## Communication
+
+- Language: Chinese for discussion, English for code
+- Direct, concrete, builder-to-builder tone
+- No emojis unless explicitly requested
+- Reference code as `file:line_number`
+
+## Code Style
+
+- No comments for WHAT code does — well-named identifiers already do that
+- Comments only for non-obvious WHY
+- No half-finished implementations
+- Default to editing existing files; prefer simple over abstract
+
+## Safety
+
+- Never update git config
+- Never skip hooks unless user explicitly asks
+- Never force push to main/master
+- Always create NEW commits (not amend) unless explicitly asked

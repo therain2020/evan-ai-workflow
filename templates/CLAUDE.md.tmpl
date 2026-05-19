@@ -1,0 +1,89 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code when working in this repository.
+
+## Project Overview
+
+<2-3 sentences describing what this project is, who it's for, and its main purpose>
+
+## Tech Stack
+
+- **Backend:** <Java 21 / Python 3.12 / Node 22 / Go 1.22> + <Spring Boot 3.4 / FastAPI / Express / Gin>
+- **Frontend:** <Vue 3.5 / React 18 / Next.js 14> + <Vite / Webpack>
+- **Database:** <MySQL 8 / PostgreSQL 16 / MongoDB 7>
+- **Cache:** <Redis 7 / None>
+- **AI/ML:** <DashScope SDK / OpenAI API / LangChain / None>
+- **Testing:** <JUnit 5 / Vitest / pytest / Jest>
+
+## Build & Run Commands
+
+### Backend (from `backend/`)
+
+```bash
+<install-command>
+<start-dev-command>
+<run-tests-command>
+<build-command>
+```
+
+### Frontend (from `frontend/`)
+
+```bash
+<install-command>
+<start-dev-command>
+<run-tests-command>
+<build-command>
+```
+
+## Architecture
+
+### Backend Package Layout
+
+```
+com.<company>.<project>/
+├── Application.java
+├── config/                   # @Configuration classes
+├── controller/               # REST controllers
+│   └── v1/                   # Current API surface
+├── service/                  # Service interfaces + impl/
+├── entity/                   # DB entities
+├── dto/                      # Request/Response DTOs
+├── mapper/                   # MyBatis/ORM mapper interfaces
+├── security/                 # Auth, JWT, filters
+├── common/                   # ApiResponse, ErrorCode, PageResponse
+├── constants/                # Constants by domain
+├── exception/                # Custom exceptions + GlobalExceptionHandler
+└── util/                     # Utility classes
+```
+
+### Frontend Layout
+
+```
+frontend/src/
+├── views/           # Page components by domain
+├── components/      # Shared UI components
+├── api/modules/     # API modules by domain
+├── store/modules/   # State management modules
+├── router/modules/  # Route definitions
+├── composables/     # Reusable composables
+└── utils/           # Utility functions
+```
+
+### Key Architectural Decisions
+
+- <decision 1 and why>
+- <decision 2 and why>
+
+## Key Files for Common Tasks
+
+- **Add an API endpoint:** `controller/<domain>/`
+- **Add business logic:** `service/<domain>/`
+- **Modify DB schema:** `resources/mapper/` or migration files
+- **Add a frontend page:** `views/<domain>/`
+- **Application config:** `resources/application.yml`
+
+## Environment Variables
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `<VAR>` | `<description>` | `<default>` |

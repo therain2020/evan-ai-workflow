@@ -1,0 +1,57 @@
+{
+  "mcpServers": {
+    "tavily": {
+      "command": "npx",
+      "args": ["-y", "tavily-mcp"],
+      "env": {
+        "TAVILY_API_KEY": "$TAVILY_API_KEY"
+      }
+    },
+    "semantic-scholar": {
+      "command": "node",
+      "args": ["$HOME/node_modules/@xbghc/semanticscholar-mcp/dist/index.js"]
+    },
+    "plantuml": {
+      "command": "plantuml-mcp-server",
+      "args": [],
+      "env": {
+        "PLANTUML_ALLOWED_DIRS": "$HOME/project/output-dir"
+      }
+    },
+    "mermaid": {
+      "command": "node",
+      "args": ["$HOME/path/to/mermaid-mcp/build/index.js"]
+    },
+    "mysql": {
+      "command": "mysql-mcp",
+      "args": [],
+      "env": {
+        "DB_HOST": "localhost",
+        "DB_PORT": "3306",
+        "DB_USER": "root",
+        "DB_PASSWORD": "$DB_PASSWORD",
+        "DB_NAME": "your_database",
+        "NODE_ENV": "production",
+        "NO_COLOR": "1",
+        "LOG_LEVEL": "error"
+      }
+    },
+    "playwright": {
+      "command": "playwright-mcp",
+      "args": [
+        "--browser", "chromium",
+        "--headless",
+        "--isolated",
+        "--no-sandbox"
+      ]
+    },
+    "drawio": {
+      "command": "drawio-mcp",
+      "args": []
+    },
+    "bb-browser": {
+      "command": "npx",
+      "args": ["-y", "bb-browser", "--mcp"]
+    }
+  }
+}
