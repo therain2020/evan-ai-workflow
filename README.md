@@ -40,4 +40,4 @@ templates/      CLAUDE.md.tmpl, mcp.json.tmpl — starting points you can copy a
 
 ## What This Is
 
-Not a textbook. I change my mind about this stuff regularly. When I do, I run `/update-workflow` and the repo updates itself. Think of it as a living work log rather than a finished guide.
+This repo documents how I actually use AI — my real tooling, real workflows, real habits. When my actual usage changes (new MCP server, different model, workflow that no longer applies), I run `/update-workflow` and the repo catches up to reality. The behavior is the truth; the docs are a mirror. Think of it as a living work log that follows what I actually do, not a prescriptive guide.
