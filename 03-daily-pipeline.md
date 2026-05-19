@@ -46,7 +46,7 @@ Headless browser testing via Playwright MCP. Three tiers:
 - **Standard** — adds medium-severity checks
 - **Exhaustive** — everything, including cosmetic issues
 
-Quick for every PR. Standard before merging to main. Exhaustive before a release.
+Quick for every PR. Standard before merging to main. Exhaustive before a release. `/qa-only` is the report-only variant — test but don't fix, useful for pre-flight checks on other people's code.
 
 ## Layer 5: `/ship` — Delivery
 
@@ -72,6 +72,16 @@ The final gate:
 ## The Shortcut: `/dev-flow`
 
 For standard changes, run `/dev-flow` — it orchestrates simplify → review → health → qa → ship in sequence, committing checkpoints along the way. Supports multi-device handoff (start on desktop, continue on laptop).
+
+## Related Skills
+
+**`/test-driven-development`** — write tests before implementation. Run before entering the pipeline for feature work.
+
+**`/investigate`** — systematic debugging with root cause analysis. When something breaks, run this before writing a fix. Pairs with [Chapter 4](04-debugging.md).
+
+**`/advisor-strategy`** — decompose complex tasks into sub-tasks, delegate to parallel agents. Use when a task spans 5+ steps or 3+ files. Pairs with [Chapter 5](05-agent-orchestration.md).
+
+**`/browse`** (gstack) — fast headless browser for one-off page checks. Lighter than Playwright MCP. Good for quick visual verification outside the QA pipeline.
 
 ## Why Five Layers
 

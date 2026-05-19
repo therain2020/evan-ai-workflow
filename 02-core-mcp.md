@@ -47,7 +47,7 @@ Configuration locks it down: `NODE_ENV=production`, `LOG_LEVEL=error`, `NO_COLOR
 
 ### Playwright — Headless Browser
 
-QA automation. Takes screenshots, fills forms, verifies page state. Runs in isolated Chromium with `--no-sandbox`. The `/qa` skill depends on it.
+QA automation. Takes screenshots, fills forms, verifies page state. Runs in isolated Chromium with `--headless`, `--isolated`, `--no-sandbox`, and a pinned Chromium binary via `--executable-path` for reproducible behavior. The `/qa` skill depends on it.
 
 ### bb-browser — Multi-Platform Search
 

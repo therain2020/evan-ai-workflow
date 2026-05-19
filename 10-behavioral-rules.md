@@ -8,57 +8,79 @@ Without explicit rules, the AI defaults to generic helpfulness — long explanat
 
 Each rule exists because I got burned by the default behavior at least once.
 
-## Communication Style
-
-**Discuss in Chinese, code in English.** Code (variable names, comments, commit messages) stays in English. Discussion and reasoning can be in Chinese. This matches how I think.
-
-**Be direct and specific.** "The memory leak is in `cache.ts:42`" not "There appears to be a potential issue with memory management in the caching layer."
-
-**No emoji in code or documentation.** No rocket ships, no checkmarks, no lightbulbs. They add visual noise without information.
-
-**Reference code as `file:line_number`.** "See `auth/login.ts:42`" not "See the login function in the auth module."
-
-## Tool Preferences
-
-**Prefer Read, Write, Edit, Glob, Grep over Bash.** These tools are faster and provide better UX. Use Bash only for actual shell operations (git commands, npm install, running tests).
-
-**Prefer PowerShell on Windows.** Use Bash only when the command requires Bash-specific syntax.
-
-**Use `/browse` from gstack for all web browsing.** Don't use `mcp__claude-in-chrome__*` tools.
-
 ## Agent Workflow
 
-**Use `/advisor-strategy` for complex tasks.** When a task has 5+ distinct steps, 3+ files, or 8+ change points — and at least one sub-task is simple enough for a weaker model — delegate via advisor-strategy.
+### Advisor Strategy (auto-activation)
 
-**Concurrency requires confirmation.** When the user says "do these in parallel," confirm the task breakdown, constraints, and acceptance criteria before launching sub-agents.
+When a task meets ALL of the following, invoke `/advisor-strategy` before writing any code:
+- 5+ distinct steps OR 3+ files OR 8+ change points
+- At least one sub-task is simple enough for Haiku
+- The task is implementation, not pure research/exploration
 
-**3-Strike Rule.** If a sub-agent fails the same task 3 times, stop and escalate. Don't retry with the same setup.
+Do NOT invoke advisor-strategy when:
+- Already inside an orchestrated skill pipeline (`/dev-flow`, `/investigate`, `/ship`, `/qa`, `/autoplan`)
+- Single-file single-change, pure research, or user says "don't delegate"
+- Reading the files would take more tokens than just doing the work
 
-## Code Style
+### Concurrency
 
-**No WHAT comments.** Well-named identifiers already say what the code does. Comments should only explain WHY — non-obvious constraints, subtle invariants, workarounds for specific bugs.
+When the user says "并发执行任务" or similar, do NOT launch sub-agents directly. Instead:
+1. Confirm the concurrency plan (task breakdown, parallelism dependencies, which agent per task)
+2. Confirm constraints for each sub-agent
+3. Confirm acceptance criteria for each sub-agent
+4. Start execution only after user explicitly confirms
 
-**No half-finished implementations.** Don't add features, refactors, or abstractions beyond what the task requires. A bug fix doesn't need surrounding cleanup. Three similar lines is better than a premature abstraction.
+3-Strike Rule: If a sub-agent fails the same task 3 times, stop retrying and report to the user.
 
-**Simple over abstract.** Don't design for hypothetical future requirements. Don't add error handling for scenarios that can't happen. Trust internal code and let it fail at system boundaries.
+### Corrective Feedback
 
-## Safety Rules
+When the user corrects a mistake, proactively ask whether to update the relevant configuration to prevent recurrence.
 
-**Never update git config.** `git config` commands are off-limits.
+When the user runs `/compact`, proactively ask whether to extract constraints from the current conversation context and update project-level or global configuration.
 
-**Never skip hooks.** No `--no-verify`, no `--no-gpg-sign`. If a hook fails, fix the underlying issue.
+## Shell Preference
 
-**Never force-push to main/master.** Warn if the user requests it.
+This environment is Windows. Prefer PowerShell for all shell operations. Do NOT use Bash by default.
 
-**Never commit secrets.** `.env`, `credentials.json`, `mcp.json`, and any file containing API keys or passwords must not be staged.
+Use Bash ONLY when: (a) the command requires Bash-specific syntax (grep, find, pipes that PowerShell mangles), or (b) a skill/script explicitly instructs use of Bash.
 
-**Review before pushing.** Before `git push`, review the full diff (`git log -p <base>..HEAD`) for: IP addresses, credentials, personal information, internal URLs, config files with real values, and unredacted environment variables.
+PowerShell syntax notes: chain with `A; if ($?) { B }` instead of `A && B`. Variables use `$env:VAR`. Escape with backtick. Here-strings use `@'...'@`.
 
-## Skill Usage
+## Git Push Security
 
-**Invoke skills by name.** When the user says "debug this" → `/investigate`. When they say "ship it" → `/ship`. Learn the trigger phrases.
+Before pushing to GitHub, review every commit's full diff (`git log -p <base>..HEAD`). Check for 6 categories:
 
-**Don't invoke a skill that's already running.** Check if a skill is active before launching it.
+1. IP addresses — internal (192.168.x.x, 10.x.x.x, 172.16-31.x.x), public, server IPs
+2. Credentials — passwords, API keys, tokens, secrets, access keys, JWT secrets, AES keys
+3. Personal information — emails (except git author), phone numbers, ID numbers, real names (if not publicly authorized)
+4. Internal URLs — intranet addresses, unpublished domains, URLs with embedded credentials
+5. Config files — `.env`, non-example values in `application.yml`, `settings.local.json`
+6. System environment variables — both names and values must not be exposed (e.g. `DB_password`, `JWT_SECRET`, `ALI_TONGYI_KEY`, `AES_SECRET_KEY`)
+
+If sensitive information is found, fix it first (git rebase -i, git filter-branch, or rewrite the commit). Never push with secrets and remediate later.
+
+## Skill Creation Standards
+
+When creating a project-level skill, use this format:
+
+```
+<repo>\.claude\skills\<skill-name>\SKILL.md
+```
+
+Key rules:
+- **Directory structure** — a skill must be a directory containing `SKILL.md`, not a single file. `skills/update-workflow/SKILL.md` is correct; `skills/update-workflow.md` is invalid.
+- **YAML frontmatter required** — the file must start with a YAML frontmatter block (`---`) containing `name`, `description`, `allowed-tools`, `triggers` fields.
+- **Format consistency** — project skills and global skills (`~/.claude/skills/<name>/SKILL.md`) use identical format, only the path prefix differs.
+- **skill-creator documentation is wrong** — its described `.claude/skills/<name>.md` flat-file format is NOT recognized by Claude Code. Do not use it.
+
+Global skill path: `~/.claude/skills/<skill-name>/SKILL.md`
+Project skill path: `.claude/skills/<skill-name>/SKILL.md`
+
+## gstack
+
+Use `/browse` from gstack for all web browsing. Never use `mcp__claude-in-chrome__*` tools.
+
+Available gstack skills for reference: `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/browse`, `/open-gstack-browser`, `/qa`, `/qa-only`, `/design-review`, `/setup-browser-cookies`, `/setup-deploy`, `/setup-gbrain`, `/sync-gbrain`, `/retro`, `/investigate`, `/document-release`, `/codex`, `/cso`, `/autoplan`, `/pair-agent`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/gstack-upgrade`, `/learn`.
 
 ## Templates
 

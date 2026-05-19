@@ -4,39 +4,45 @@ This file applies to all Claude Code sessions, across all projects.
 
 ## Agent workflow
 
-When the user says "并发执行任务" or similar, do NOT launch sub-agents directly. Instead:
-1. Confirm the concurrency plan (task breakdown, parallelism dependencies, which agent per task)
+### Advisor Strategy (auto-activation)
+
+When a task meets ALL of the following, invoke `/advisor-strategy` before writing any code:
+- 5+ distinct steps OR 3+ files OR 8+ change points
+- At least one sub-task is simple enough for Haiku
+- The task is implementation, not pure research/exploration
+
+Do NOT invoke advisor-strategy when:
+- Already inside an orchestrated skill pipeline
+- Single-file single-change, pure research, or user says "don't delegate"
+- Reading the files would take more tokens than just doing the work
+
+### Concurrency
+
+When the user says "do these in parallel" or similar, do NOT launch sub-agents directly. Instead:
+1. Confirm the concurrency plan
 2. Confirm constraints for each sub-agent
 3. Confirm acceptance criteria for each sub-agent
 4. Start execution only after user explicitly confirms
-If a sub-agent fails the same task 3 times, stop retrying and report to the user.
+If a sub-agent fails the same task 3 times, stop and report.
 
-When the user corrects a mistake, proactively ask whether to update the relevant configuration to prevent recurrence.
+When the user corrects a mistake, ask whether to update the relevant configuration.
 
-When the user runs `/compact`, proactively ask whether to extract constraints from the current conversation context and update project-level or global configuration.
+When the user runs `/compact`, ask whether to extract constraints from the conversation and update configuration.
 
-## Tool Preferences
+## Shell preference
 
-- Prefer Read, Edit, Write, Glob, Grep over Bash for file operations
-- Use `/browse` from gstack for all web browsing. Never use `mcp__claude-in-chrome__*` tools.
+Prefer PowerShell on Windows. Use Bash only when Bash-specific syntax is required.
 
-## Communication
+## Git push security
 
-- Language: Chinese for discussion, English for code
-- Direct, concrete, builder-to-builder tone
-- No emojis unless explicitly requested
-- Reference code as `file:line_number`
+Before pushing to GitHub, review every commit's full diff for: IP addresses, credentials, personal information, internal URLs, config files with real values, and unredacted environment variables.
 
-## Code Style
+## Skill creation standards
 
-- No comments for WHAT code does — well-named identifiers already do that
-- Comments only for non-obvious WHY
-- No half-finished implementations
-- Default to editing existing files; prefer simple over abstract
+- Skills must be directories containing `SKILL.md`, not flat files
+- YAML frontmatter with `name`, `description`, `allowed-tools`, `triggers` is required
+- Project skills and global skills use identical format
 
-## Safety
+## gstack
 
-- Never update git config
-- Never skip hooks unless user explicitly asks
-- Never force push to main/master
-- Always create NEW commits (not amend) unless explicitly asked
+Use `/browse` from gstack for all web browsing. Never use `mcp__claude-in-chrome__*` tools.

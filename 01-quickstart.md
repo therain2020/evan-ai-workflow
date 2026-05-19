@@ -32,9 +32,28 @@ I use DeepSeek as the API backend. Create or edit `~/.claude/settings.json`:
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-v4-flash",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro[1m]",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-v4-pro[1m]"
+  },
+  "model": "opus",
+  "theme": "dark",
+  "autoUpdatesChannel": "latest",
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(python *)",
+      "PowerShell(Get-ChildItem *)"
+    ],
+    "deny": [
+      "WebFetch",
+      "WebSearch"
+    ]
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true
   }
 }
 ```
+
+The `model` field picks the Claude model alias to use. `enabledPlugins` activates plugins like `frontend-design` for UI generation. `permissions` controls which tools auto-run without prompting — start restrictive and open up as needed.
 
 If you use Anthropic directly, skip the `ANTHROPIC_BASE_URL` and set your Anthropic key.
 
