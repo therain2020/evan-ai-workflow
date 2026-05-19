@@ -12,3 +12,7 @@ Thumbs.db
 .env
 credentials.json
 mcp.json
+settings.local.json
+
+# Runtime
+logs/
