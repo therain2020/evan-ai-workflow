@@ -34,12 +34,17 @@ Chapters 5 through 10 are deeper dives — jump to whichever one you need. No fi
 ## Companion files
 
 ```
-scripts/        install-custom-skills.sh — installs my custom skills in one command
+CLAUDE.md       entry point — tells Claude Code how to restore and self-maintain this environment
+scripts/        setup.sh — one-command restore on a new device
 templates/      CLAUDE.md.tmpl, CLAUDE.md.global.tmpl, mcp.json.tmpl — copy and edit to bootstrap your own setup
 ```
 
+## Portable kit
+
+This repo isn't just documentation — it IS my Claude Code environment in portable form. Clone it to a new device, open Claude Code here, and it walks you through restore. Five minutes from zero to fully configured. The `CLAUDE.md` at the repo root is the entry point that ties everything together.
+
 ## How this repo works
 
-I use AI a certain way. When that changes — new MCP server, different model, a workflow I no longer run — I fire `/update-workflow`. The skill reads my actual config files, compares them against these docs, and fixes whatever drifted. Behavior is the truth. The docs are a mirror.
+I use AI a certain way. When that changes — new MCP server, different model, a workflow I no longer run — I fire `/update-workflow`. The skill reads my actual config files, compares them against these docs, and fixes whatever drifted. The root `CLAUDE.md` watches for drift proactively and suggests the update. Behavior is the truth. The docs are a mirror.
 
 No textbook. A living work log that follows what I actually do.

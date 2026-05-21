@@ -69,9 +69,9 @@ The final gate:
 | Security-sensitive | `/simplify` → `/review` → `/cso` |
 | Before merging any PR | At minimum `/review` + `/health` |
 
-## The Shortcut: `/dev-flow`
+## The Shortcut: `/project-flow`
 
-For standard changes, run `/dev-flow` — it orchestrates simplify → review → health → qa → ship in sequence, committing checkpoints along the way. Supports multi-device handoff (start on desktop, continue on laptop).
+For complex changes, run `/project-flow` — a 6-phase pipeline (information gathering → multi-perspective thinking → plan design → audit → execution → synthesis). For simpler changes, run the individual layers manually. `/dev-flow` (the predecessor) is deprecated.
 
 ## Related Skills
 

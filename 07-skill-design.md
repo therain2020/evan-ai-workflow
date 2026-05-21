@@ -73,6 +73,15 @@ gstack provides 50+ skills for general development tasks (QA, design, planning, 
 
 | Domain | Custom Skill | Why Not gstack |
 |--------|-------------|----------------|
+| Workflow orchestration | `/project-flow` | 6-phase state-driven pipeline with interrupt/resume |
+| Task decomposition | `/advisor-strategy` | Strong/weak model orchestration with Haiku dispatch |
+| Information gathering | `/software-info-collector` | Structured project info extraction, phase 1 of project-flow |
+| Multi-perspective review | `/multi-perspective-thinker` | 6 technical + 8 role-based critique angles |
+| Plan auditing | `/plan-auditor` | 6-criteria cycle detection, cross-phase verification |
+| Context gathering | `/full-context-gatherer` | 4-phase mandatory context collection before tasks |
+| Cross-platform search | `/agent-reach` | 17-platform CLI/MCP/curl search (social, dev, career, video) |
+| Skill creation | `/skill-creator` | Guided skill creation with proper format validation |
+| Module audit | `/module-audit` | 3-phase retrospective module deep-dive |
 | Thesis editing | `/thesis-editor` | Domain-specific docx manipulation |
 | Chinese AI polish | `/humanizer-zh` | Chinese-specific AI writing detection |
 | English AI polish | `/humanizer` | English AI writing pattern removal |

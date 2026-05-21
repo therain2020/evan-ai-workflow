@@ -2,47 +2,165 @@
 
 This file applies to all Claude Code sessions, across all projects.
 
-## Agent workflow
+## Routing layer
 
-### Advisor Strategy (auto-activation)
+收到任务后先判定路由：
 
-When a task meets ALL of the following, invoke `/advisor-strategy` before writing any code:
-- 5+ distinct steps OR 3+ files OR 8+ change points
+1. **`/project-flow` 管道触发？** → 用户说 "implement/full workflow/全流程/开发流程/dev flow/完整实现/start task/启动任务" → `Skill("project-flow")`
+2. **advisor-strategy 触发？** → 见评估层判定（下）
+3. **直接执行** → 走 Code workflow 4 步
+
+管道运行时设置 `current_pipeline: flow`，防止 advisor 自动重复激活。
+
+### Assessment layer
+
+Estimate steps, files touched, change points.
+
+Trigger advisor-strategy when ALL of:
+- 5+ distinct steps OR 3+ files OR 8+ change points (a change point = one logical edit intent, e.g. "rename X" = 1 point regardless of call site count)
 - At least one sub-task is simple enough for Haiku
-- The task is implementation, not pure research/exploration
+- Implementation task (not pure research/exploration)
+- NOT inside a pipeline (`current_pipeline` is unset)
+  - Pipelines that set current_pipeline: /project-flow, /flow, /investigate, /ship, /qa, /autoplan
 
 Do NOT invoke advisor-strategy when:
-- Already inside an orchestrated skill pipeline
-- Single-file single-change, pure research, or user says "don't delegate"
-- Reading the files would take more tokens than just doing the work
+- Single-file single-change, pure research, or user says "don't delegate" / "直接做"
+- Inside any pipeline skill listed above
+- Reading needed files costs more tokens than just doing the work
 
 ### Concurrency
 
-When the user says "do these in parallel" or similar, do NOT launch sub-agents directly. Instead:
-1. Confirm the concurrency plan
+When the user says "并发执行任务" or similar, do NOT launch sub-agents directly. Instead:
+1. Confirm the concurrency plan (task breakdown, parallelism dependencies, which agent per task)
 2. Confirm constraints for each sub-agent
 3. Confirm acceptance criteria for each sub-agent
 4. Start execution only after user explicitly confirms
-If a sub-agent fails the same task 3 times, stop and report.
+If a sub-agent fails the same task 3 times, stop retrying and report to the user.
 
-When the user corrects a mistake, ask whether to update the relevant configuration.
+When the user corrects a mistake, proactively ask whether to update the relevant configuration to prevent recurrence.
 
-When the user runs `/compact`, ask whether to extract constraints from the conversation and update configuration.
+When the user runs `/compact`, proactively ask whether to extract constraints from the current conversation context and update project-level or global configuration.
+
+## Code workflow
+
+When writing code (new feature, bug fix, refactor, or any non-trivial change), follow this mandatory workflow:
+
+1. **全面收集信息** — Read all relevant files, understand existing patterns, dependencies, and constraints.
+   For complex tasks, use `Skill("full-context-gatherer")` for code-facing context.
+2. **多角度思考** — Evaluate the approach from at minimum:
+   - **架构师角度**: Does this fit the overall architecture? Will it scale? Are there hidden coupling or maintenance risks?
+   - **程序员角度**: Is the implementation correct, safe, and idiomatic? Are edge cases covered? Will it be easy to debug?
+   - **用户角度**: Does this actually solve the user's problem? Is the interface intuitive?
+   For systematic multi-stakeholder analysis, use `Skill("project-flow")` Phase 1-2.
+3. **持久化方案** — Write the plan to `项目根目录/task/<方案名>/plan.md`. The plan must include: what changes, in which files, why this approach over alternatives. Use JSON code block for task lists. Ensure `task/` is in `.gitignore` — plans are working documents, not deliverables.
+   For complex tasks, use `Skill("project-flow")` Phase 3-4 for atomic task design + audit.
+4. **用户确认后方可执行** — Present the plan for user approval. Do NOT write implementation code until the user explicitly confirms the plan.
+
+This applies to ALL code changes beyond trivial one-liners (typo fixes, obvious logging additions, single-variable renames). When in doubt, plan first.
 
 ## Shell preference
 
-Prefer PowerShell on Windows. Use Bash only when Bash-specific syntax is required.
+This environment is Windows. Prefer `PowerShell` for all shell operations. Do NOT use `Bash` by default.
 
-## Git push security
+- Use `Bash` ONLY when: (a) the command requires Bash-specific syntax (e.g., `grep`, `find`, pipes that PowerShell mangles), or (b) a skill/script explicitly instructs use of Bash.
+- PowerShell syntax notes:
+  - Chaining: `A; if ($?) { B }` instead of `A && B`
+  - Variables: `$env:VAR` for env vars, `${VAR}` does NOT work
+  - Quote paths with spaces: `"C:\path with spaces\"`
+  - Use `Select-String` instead of `grep`, `Get-ChildItem` instead of `ls -R`
+  - Escape with backtick `` ` ``, not backslash `\`
+  - Here-strings use `@'...'@` (single-quoted, literal) or `@"..."@` (double-quoted, interpolated)
 
-Before pushing to GitHub, review every commit's full diff for: IP addresses, credentials, personal information, internal URLs, config files with real values, and unredacted environment variables.
+## Windows 中文编码
 
-## Skill creation standards
+Windows 下 Python 默认使用系统代码页（简体中文 Windows = GBK），打印/写入中文或 emoji 会触发 `UnicodeEncodeError`。
 
-- Skills must be directories containing `SKILL.md`, not flat files
-- YAML frontmatter with `name`, `description`, `allowed-tools`, `triggers` is required
-- Project skills and global skills use identical format
+### 脚本级修复
+
+每个包含中文输出的 Python 脚本，在 import 之后立即调用：
+
+```python
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _windows import fix_encoding
+fix_encoding()
+```
+
+其中 `_windows.py` 的 `fix_encoding()` 实现：
+
+```python
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+```
+
+### 文件 I/O
+
+读/写文件始终显式指定 `encoding="utf-8"`，不依赖系统默认编码：
+
+```python
+text = Path("file.md").read_text(encoding="utf-8")
+Path("out.html").write_text(html, encoding="utf-8")
+```
+
+### 项目级模板
+
+项目 `scripts/` 目录下放置 `_windows.py` 作为共享编码修复模块。所有脚本从该模块导入而不是内联 `sys.reconfigure`，保持 DRY。
+
+### 命令行调用
+
+在 Bash/PowerShell 中跑 Python 时，可设置环境变量兜底：
+
+```powershell
+$env:PYTHONIOENCODING = "utf-8"
+```
+
+但脚本内显式 `reconfigure` 更可靠（环境变量不保证生效）。
+
+## Git 推送安全
+
+向 GitHub 推送前，必须审查每个 commit 的完整 diff（`git log -p`），逐项检查：
+
+1. **IP 地址** — 内网 IP（192.168.x.x, 10.x.x.x, 172.16-31.x.x）、公网 IP、服务器 IP
+2. **凭据** — 密码、API key、token、secret、access key、JWT secret、AES key
+3. **个人信息** — 邮箱（git author 除外）、手机号、身份证号、真实姓名（用户未公开授权时）
+4. **内部 URL** — 内网地址、未公开域名、带凭据的 URL
+5. **配置文件** — `.env`、`application.yml` 中的非示例值、`settings.local.json`
+6. **系统环境变量** — 变量名和变量值都不得暴露（如 `DB_password`、`JWT_SECRET`、`ALI_TONGYI_KEY`、`AES_SECRET_KEY` 等）。讨论中引用环境变量名时，提交前必须脱敏为占位符
+
+发现问题先修正（`git rebase -i` 删除敏感信息、`git filter-branch` 或重写 commit），再推送。不要带着敏感信息推送后再补救。
+
+推送前必须用以下命令确认审查：
+```
+git log -p <base>..HEAD
+```
+
+逐文件确认 diff 中无上述 6 类信息后，方可推送。
+
+## Skill 创建规范
+
+创建项目级 skill 时，必须使用以下格式：
+
+```
+<repo>\.claude\skills\<skill-name>\SKILL.md
+```
+
+关键规则：
+- **目录结构** — skill 必须是一个目录，内含 `SKILL.md`，不是单文件。`skills/update-workflow/SKILL.md` 正确，`skills/update-workflow.md` 无效。
+- **YAML frontmatter 必须** — 文件必须以 `---` 开头的 YAML frontmatter 块开始，包含 `name`、`description`、`allowed-tools`、`triggers` 字段。
+- **与全局 skill 格式一致** — 项目级 skill 和全局 skill（`~/.claude/skills/<name>/SKILL.md`）使用完全相同的格式，仅路径前缀不同。
+- **skill-creator 文档有误** — 其描述的 `.claude/skills/<name>.md` 简化格式实际上不会被 Claude Code 识别，不要使用。
+
+全局 skill 路径：`~/.claude/skills/<skill-name>/SKILL.md`
+项目 skill 路径：`.claude/skills/<skill-name>/SKILL.md`
 
 ## gstack
 
-Use `/browse` from gstack for all web browsing. Never use `mcp__claude-in-chrome__*` tools.
+Use /browse from gstack for all web browsing. Never use mcp__claude-in-chrome__* tools.
+Available skills: /office-hours, /plan-ceo-review, /plan-eng-review, /plan-design-review,
+/design-consultation, /design-shotgun, /design-html, /review, /ship, /land-and-deploy,
+/canary, /benchmark, /browse, /open-gstack-browser, /qa, /qa-only, /design-review,
+/setup-browser-cookies, /setup-deploy, /setup-gbrain, /sync-gbrain, /retro, /investigate, /document-release,
+/codex, /cso, /autoplan, /pair-agent, /careful, /freeze, /guard, /unfreeze, /gstack-upgrade, /learn.

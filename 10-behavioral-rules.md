@@ -8,6 +8,14 @@ Without explicit rules, the AI defaults to generic helpfulness — long explanat
 
 Each rule exists because I got burned by the default behavior at least once.
 
+## Routing Layer
+
+Every session starts with a routing decision. The AI checks whether the user's request triggers a pipeline skill, qualifies for advisor-strategy decomposition, or should proceed directly with the 4-step code workflow.
+
+Pipelines that take over routing: `/project-flow`, `/investigate`, `/ship`, `/qa`, `/autoplan`. When a pipeline is active, it sets `current_pipeline` to prevent the advisor from double-activating.
+
+The routing layer exists because default AI behavior — jumping straight to code — is wrong for complex tasks. A 3-second routing check prevents 30 minutes of rework.
+
 ## Agent Workflow
 
 ### Advisor Strategy (auto-activation)
@@ -18,7 +26,7 @@ When a task meets ALL of the following, invoke `/advisor-strategy` before writin
 - The task is implementation, not pure research/exploration
 
 Do NOT invoke advisor-strategy when:
-- Already inside an orchestrated skill pipeline (`/dev-flow`, `/investigate`, `/ship`, `/qa`, `/autoplan`)
+- Already inside an orchestrated skill pipeline (`/project-flow`, `/investigate`, `/ship`, `/qa`, `/autoplan`)
 - Single-file single-change, pure research, or user says "don't delegate"
 - Reading the files would take more tokens than just doing the work
 
@@ -38,6 +46,17 @@ When the user corrects a mistake, proactively ask whether to update the relevant
 
 When the user runs `/compact`, proactively ask whether to extract constraints from the current conversation context and update project-level or global configuration.
 
+## Code Workflow
+
+When writing code (new feature, bug fix, refactor, or any non-trivial change), a mandatory 4-step workflow applies:
+
+1. **全面收集信息** — Read all relevant files, understand existing patterns, dependencies, and constraints.
+2. **多角度思考** — Evaluate from architect, programmer, and user perspectives.
+3. **持久化方案** — Write the plan to `项目根目录/task/<方案名>/plan.md` with what changes, in which files, and why this approach.
+4. **用户确认后方可执行** — Present the plan for user approval before writing any implementation code.
+
+This applies to all code changes beyond trivial one-liners. The rule exists because AI is too eager to write code without understanding context. A 2-minute plan prevents a 20-minute wrong implementation.
+
 ## Shell Preference
 
 This environment is Windows. Prefer PowerShell for all shell operations. Do NOT use Bash by default.
@@ -45,6 +64,14 @@ This environment is Windows. Prefer PowerShell for all shell operations. Do NOT 
 Use Bash ONLY when: (a) the command requires Bash-specific syntax (grep, find, pipes that PowerShell mangles), or (b) a skill/script explicitly instructs use of Bash.
 
 PowerShell syntax notes: chain with `A; if ($?) { B }` instead of `A && B`. Variables use `$env:VAR`. Escape with backtick. Here-strings use `@'...'@`.
+
+## Windows 中文编码
+
+Windows 下 Python 默认使用系统代码页（简体中文 Windows = GBK），打印/写入中文或 emoji 会触发 `UnicodeEncodeError`。
+
+Every Python script that outputs Chinese must fix encoding on startup. A shared `_windows.py` module in the project's `scripts/` directory provides `fix_encoding()`, which reconfigures stdout/stderr to UTF-8. All file I/O must use explicit `encoding="utf-8"`.
+
+This section exists because encoding bugs are silent until they're not — a script works on Linux, fails on Windows, and the error message is a cryptic `UnicodeEncodeError` with no hint about the fix.
 
 ## Git Push Security
 

@@ -12,6 +12,13 @@ mkdir -p "$SKILLS_DIR"
 
 # Skill list: directory name -> description
 declare -A SKILLS=(
+    ["advisor-strategy"]="Strong/weak model task orchestration"
+    ["project-flow"]="6-phase state-driven development pipeline"
+    ["software-info-collector"]="Structured project info extraction (phase 1)"
+    ["multi-perspective-thinker"]="Multi-angle critique (phase 2)"
+    ["plan-auditor"]="Plan audit with cycle detection (phase 4)"
+    ["full-context-gatherer"]="Mandatory 4-phase context collection"
+    ["agent-reach"]="17-platform cross-platform search"
     ["debug-methodology"]="Systematic debugging methodology (Chinese)"
     ["thesis-editor"]="Thesis docx editing with formatting constraints"
     ["docx-editor"]="Word .docx read/write/edit with XML manipulation"

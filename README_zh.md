@@ -34,12 +34,17 @@
 ## 配套文件
 
 ```
-scripts/        install-custom-skills.sh — 一键安装我用的自定义 skill
+CLAUDE.md       入口文件 — 告诉 Claude Code 如何在新设备恢复环境并持续自维护
+scripts/        setup.sh — 新设备一键恢复
 templates/      CLAUDE.md.tmpl、CLAUDE.md.global.tmpl、mcp.json.tmpl — 复制改改就能用
 ```
 
+## 便携套件
+
+这个仓库不只是文档——它就是我的 Claude Code 环境的便携形态。新设备上 clone 下来，在仓库目录里打开 Claude Code，它会引导你完成恢复。五分钟从零到完整配置。仓库根目录的 `CLAUDE.md` 是把所有东西串起来的入口。
+
 ## 这个仓库怎么工作的
 
-我用 AI 有自己的一套。什么时候这套东西变了——换了 MCP 服务器、换了模型、某个工作流不再用了——跑一遍 `/update-workflow`。skill 会去读我实际的配置文件，对比这些文档写了什么，然后把不一致的地方修掉。实际行为是真相，文档只是镜像。
+我用 AI 有自己的一套。什么时候这套东西变了——换了 MCP 服务器、换了模型、某个工作流不再用了——跑一遍 `/update-workflow`。skill 会去读我实际的配置文件，对比这些文档写了什么，然后把不一致的地方修掉。根目录的 `CLAUDE.md` 会主动监控偏离并建议更新。实际行为是真相，文档只是镜像。
 
 不是教科书。一本活的工作日志，追着我实际做的事跑。

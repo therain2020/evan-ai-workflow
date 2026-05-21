@@ -40,7 +40,17 @@ I use DeepSeek as the API backend. Create or edit `~/.claude/settings.json`:
     "allow": [
       "Bash(git *)",
       "Bash(python *)",
-      "PowerShell(Get-ChildItem *)"
+      "Bash(npm *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(rm *)",
+      "Bash(cat *)",
+      "Bash(curl *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-Item *)",
+      "PowerShell(New-Item *)"
     ],
     "deny": [
       "WebFetch",
